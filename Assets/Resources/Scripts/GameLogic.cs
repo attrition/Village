@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class Main : MonoBehaviour
+public class GameLogic : MonoBehaviour
 {
     private Map map;
 
@@ -10,7 +10,7 @@ public class Main : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        map = new Map(MapSize);
+        map = new Map(this, MapSize);
     }
 
     // Update is called once per frame
