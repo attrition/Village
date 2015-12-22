@@ -57,55 +57,52 @@ public class Map
 		GenerateRoads();
     }
 
-	private void GenerateRoads()
+    #region Road generation
+
+    private void GenerateRoads()
 	{
 		// 1:20%, 2:50%, 3:20%, 4:10%
 		var straightDistanceOdds = new int[10] { 1, 1, 2, 2, 2, 2, 2, 3, 3, 4 };
 
-        // Negative:20%, None:60%, Positive:20%
-        // Among turns: 1:60%, 2:30%, 3:10%
         var turnDistanceOdds = new int[50] {
-            -3,
-            -2, -2, -2,
-            -1, -1, -1, -1, -1, -1,
+            -4,
+            -4, -4,
+            -3, -3, -3, 
+            -2, -2, -2, -2,
+            -1, -1, -1, -1, -1,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1,
-            2, 2, 2,
-            3
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,            
+            1, 1, 1, 1, 1,
+            2, 2, 2, 2,
+            3, 3, 3,
+            4, 4,
+            4
         };
 
 		var directionsLeft = new List<Direction>() { 
 			Direction.North, Direction.East, Direction.South, Direction.West 
 		};
 
-		// two legs of roads, from centre to 2 edges
-		for (int leg = 0; leg < 4; leg++)
-		{
-			Direction legDirection = directionsLeft[Random.Range(0, directionsLeft.Count - 1)];
-			directionsLeft.Remove(legDirection);
+        // two legs of roads, from centre to 2 edges
+        for (int leg = 0; leg < 4; leg++)
+        {
+            Direction legDirection = directionsLeft[Random.Range(0, directionsLeft.Count)];
+            directionsLeft.Remove(legDirection);
 
-			int mid = Size / 2;
-			int x = mid;
-			int y = mid;
+            int mid = Size / 2;
+            int x = mid;
+            int y = mid;
 
-			while (GetTileTypeAt(x, y) != TileType.INVALID)
-			{
-				CreateRoadLeg(ref x, ref y, legDirection, straightDistanceOdds, turnDistanceOdds);
-			}
-		}
+            while (GetTileTypeAt(x, y) != TileType.INVALID)
+            {
+                var straightDistance = straightDistanceOdds[Random.Range(0, 10)];
+                var turnDistance = turnDistanceOdds[Random.Range(0, 50)];
+
+                PaintRoad(ref x, ref y, legDirection, straightDistance, turnDistance);
+            }
+        }
 	}
-
-	private void CreateRoadLeg(ref int x, ref int y, Direction direction, 
-		                       int[] strDst, int[] turnDst)
-	{
-		var straightDistance = strDst[Random.Range(0, 10)];
-		var turn = turnDst[Random.Range(0, 50)];
-
-		PaintRoad(ref x, ref y, direction, straightDistance, turn);
-	}
-
+    
 	private void PaintRoad(ref int x, ref int y, Direction direction, int strDst, int turnDst)
 	{
 		int oldX = x;
@@ -158,6 +155,8 @@ public class Map
                 SetTileTypeAt(x, y1, TileType.Road);
         }
     }
+    
+    #endregion
 
     private void CreateTerrainRep()
     {
@@ -167,6 +166,11 @@ public class Map
         TerrainRep.Generate(this);
 
         TerrainObj.transform.parent = Game.transform;
+    }
+
+    public void SetTileTypeAt(Vector2 tilePos, TileType tileType)
+    {
+        SetTileTypeAt((int)tilePos.x, (int)tilePos.y, tileType);
     }
 
     private void SetTileTypeAt(int x, int y, TileType tileType)
