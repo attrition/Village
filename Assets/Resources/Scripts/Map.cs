@@ -100,8 +100,8 @@ public class Map
 	private void CreateRoadLeg(ref int x, ref int y, Direction direction, 
 		                       int[] strDst, int[] turnDst)
 	{
-		var straightDistance = strDst[Random.Range(0, 9)];
-		var turn = turnDst[Random.Range(0, 49)];
+		var straightDistance = strDst[Random.Range(0, 10)];
+		var turn = turnDst[Random.Range(0, 50)];
 
 		PaintRoad(ref x, ref y, direction, straightDistance, turn);
 	}
