@@ -49,14 +49,22 @@ public class Map
         var totalSize = Size * Size;
         tileMap = new TileType[totalSize];
 
-        // default grass field
+        // large grass field by default
         for (int i = 0; i < totalSize; i++)
             tileMap[i] = TileType.Grass;
 
         GenerateForests();
-
-        // drunk walk some roads center-to-east
 		GenerateRoads();
+    }
+
+    private void CreateTerrainRep()
+    {
+        TerrainObj = new GameObject("TerrainRep");
+
+        TerrainRep = TerrainObj.AddComponent<TerrainRep>();
+        TerrainRep.Generate(this);
+
+        TerrainObj.transform.parent = Game.transform;
     }
 
     #region Forest generation
@@ -219,15 +227,7 @@ public class Map
     
     #endregion
 
-    private void CreateTerrainRep()
-    {
-        TerrainObj = new GameObject("TerrainRep");
-
-        TerrainRep = TerrainObj.AddComponent<TerrainRep>();
-        TerrainRep.Generate(this);
-
-        TerrainObj.transform.parent = Game.transform;
-    }
+    #region Accessors / Utils
 
     public void SetTileTypeAt(Vector2 tilePos, TileType tileType)
     {
@@ -260,4 +260,7 @@ public class Map
         return new Vector3(Mathf.FloorToInt(worldPos.x),
                            Mathf.FloorToInt(worldPos.z));
     }
+
+    #endregion
+
 }
