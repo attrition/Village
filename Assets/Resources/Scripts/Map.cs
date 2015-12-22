@@ -53,9 +53,70 @@ public class Map
         for (int i = 0; i < totalSize; i++)
             tileMap[i] = TileType.Grass;
 
+        GenerateForests();
+
         // drunk walk some roads center-to-east
 		GenerateRoads();
     }
+
+    #region Forest generation
+
+    private void GenerateForests()
+    {
+        int forestSeeds = 50;
+        int maxGenerations = 500;
+
+        for (int i = 0; i < forestSeeds; i++)
+        {
+            int seedX = Random.Range(2, Size - 2);
+            int seedY = Random.Range(2, Size - 2);
+
+            SetTileTypeAt(seedX, seedY, TileType.Trees);
+            SetTileTypeAt(seedX - 1, seedY, TileType.Trees);
+            SetTileTypeAt(seedX, seedY - 1, TileType.Trees);
+            SetTileTypeAt(seedX + 1, seedY, TileType.Trees);
+            SetTileTypeAt(seedX, seedY + 1, TileType.Trees);
+
+            var openList = new List<Vector2>()
+            {
+                new Vector2(seedX - 1, seedY - 1),
+                new Vector2(seedX + 1, seedY + 1),
+                new Vector2(seedX - 1, seedY + 1),
+                new Vector2(seedX + 1, seedY - 1),
+            };
+
+            for (int gen = 0; gen < maxGenerations; gen++)
+            {
+                if (openList.Count == 0)
+                    break;
+                
+                var curr = openList[0];
+                openList.RemoveAt(0);
+
+                var currTile = GetTileTypeAt(curr);
+                if (currTile == TileType.Trees || currTile == TileType.INVALID)
+                    continue;
+
+                int chance = 0;
+                for (int y = -1; y <= 1; y++)
+                    for (int x = -1; x <= 1; x++)
+                        if (GetTileTypeAt(curr + new Vector2(x, y)) == TileType.Trees)
+                            chance += 20;
+
+                var roll = Random.Range(0, 100);
+                if (roll < chance)
+                {
+                    SetTileTypeAt(curr, TileType.Trees);
+                    openList.Add(new Vector2(curr.x - 1, curr.y));
+                    openList.Add(new Vector2(curr.x, curr.y - 1));
+                    openList.Add(new Vector2(curr.x + 1, curr.y));
+                    openList.Add(new Vector2(curr.x, curr.y + 1));
+                }
+            }
+        }
+    }
+
+    #endregion
 
     #region Road generation
 

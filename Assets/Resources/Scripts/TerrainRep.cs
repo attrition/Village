@@ -30,6 +30,7 @@ public class TerrainRep : MonoBehaviour
 
         CreateGroundMesh();
         CreateRoadMesh();
+        CreateForests();
     }
 
     private void CreateRoadMesh()
@@ -141,6 +142,29 @@ public class TerrainRep : MonoBehaviour
         coll.sharedMesh = groundMesh;
 
         click.clickHandler = this.GroundClickHandler;
+    }
+
+    private void CreateForests()
+    {
+        for (int z = 0; z < map.Size; z++)
+        {
+            for (int x = 0; x < map.Size; x++)
+            {
+                if (map.GetTileTypeAt(x, z) == TileType.Trees)
+                {
+                    GameObject treeObj = Instantiate(Resources.Load("Prefabs/CubeTrees"),
+                                                     new Vector3(x + 0.5f, 0, z + 0.5f),
+                                                     Quaternion.identity)
+//                                                     Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.up))
+                                         as GameObject;
+                    Vector3 scale = new Vector3(1f, Random.Range(1f, 2f), 1f);
+                    treeObj.transform.localScale = scale;
+                    treeObj.transform.position = treeObj.transform.position + new Vector3(0f, scale.y - (scale.y / 2f), 0f);
+                    var click = treeObj.GetComponent<ClickableObject>();
+                    click.clickHandler = GroundClickHandler;
+                }
+            }
+        }
     }
 
     private void GroundClickHandler(GameObject ground, Vector3 clickPos)
