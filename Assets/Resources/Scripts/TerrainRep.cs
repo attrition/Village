@@ -146,6 +146,7 @@ public class TerrainRep : MonoBehaviour
 
     private void CreateForests()
     {
+        var treesObj = new GameObject("Trees");
         for (int z = 0; z < map.Size; z++)
         {
             for (int x = 0; x < map.Size; x++)
@@ -157,9 +158,12 @@ public class TerrainRep : MonoBehaviour
                                                      Quaternion.identity)
 //                                                     Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.up))
                                          as GameObject;
+
                     Vector3 scale = new Vector3(1f, Random.Range(1f, 2f), 1f);
                     treeObj.transform.localScale = scale;
                     treeObj.transform.position = treeObj.transform.position + new Vector3(0f, scale.y - (scale.y / 2f), 0f);
+                    treeObj.transform.parent = treesObj.transform;
+
                     var click = treeObj.GetComponent<ClickableObject>();
                     click.clickHandler = GroundClickHandler;
                 }
