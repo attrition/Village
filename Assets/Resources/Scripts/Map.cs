@@ -62,11 +62,19 @@ public class Map
 		// 1:20%, 2:50%, 3:20%, 4:10%
 		var straightDistanceOdds = new int[10] { 1, 1, 2, 2, 2, 2, 2, 3, 3, 4 };
 
-		// Left:0:20%, None:1:50%, Right:2:20%
-		var turnOdds = new int[5] { 0, 1, 1, 1, 2 };
-
-		// 1:60%, 2:30%, 3:10%
-		var turnDistanceOdds = new int[10] { 1, 1, 1, 1, 1, 1, 2, 2, 2, 3 };
+        // Negative:20%, None:60%, Positive:20%
+        // Among turns: 1:60%, 2:30%, 3:10%
+        var turnDistanceOdds = new int[50] {
+            -3,
+            -2, -2, -2,
+            -1, -1, -1, -1, -1, -1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1,
+            2, 2, 2,
+            3
+        };
 
 		var directionsLeft = new List<Direction>() { 
 			Direction.North, Direction.East, Direction.South, Direction.West 
@@ -84,85 +92,72 @@ public class Map
 
 			while (GetTileTypeAt(x, y) != TileType.INVALID)
 			{
-				CreateRoadLeg(ref x, ref y, legDirection, straightDistanceOdds, turnOdds, turnDistanceOdds);
+				CreateRoadLeg(ref x, ref y, legDirection, straightDistanceOdds, turnDistanceOdds);
 			}
 		}
 	}
 
 	private void CreateRoadLeg(ref int x, ref int y, Direction direction, 
-		                       int[] strDst, int[] turn, int[] turnDst)
+		                       int[] strDst, int[] turnDst)
 	{
 		var straightDistance = strDst[Random.Range(0, 9)];
-		var turnCheck = turn[Random.Range(0, 4)];
-		var turnDistance = turnDst[Random.Range(0, 9)];
+		var turn = turnDst[Random.Range(0, 49)];
 
-		PaintRoad(ref x, ref y, direction, straightDistance, turnCheck, turnDistance);
+		PaintRoad(ref x, ref y, direction, straightDistance, turn);
 	}
 
-	private void PaintRoad(ref int x, ref int y, Direction direction, int strDst, int turn, int turnDst)
+	private void PaintRoad(ref int x, ref int y, Direction direction, int strDst, int turnDst)
 	{
 		int oldX = x;
 		int oldY = y;
 
 		if (direction == Direction.North)
 		{
-			x = GetRoadTurnEnd(x, direction, turn, turnDst);
+            x += turnDst;
 			y += strDst;
 		}
 		else if (direction == Direction.South)
 		{
-			x = GetRoadTurnEnd(x, direction, turn, turnDst);
-			y -= strDst;
+            x += turnDst;
+            y -= strDst;
 		}
 		else if (direction == Direction.West)
 		{
 			x -= strDst;
-			y = GetRoadTurnEnd(y, direction, turn, turnDst);
-		}
+            y += turnDst;
+
+        }
 		else if (direction == Direction.East)
 		{
 			x += strDst;
-			y = GetRoadTurnEnd(y, direction, turn, turnDst);
+            y += turnDst;
 		}
 
-		PaintRoadFrom(oldX, oldY, x, y, direction);
-	}
+        // paint two lines for a road leg, one vertical one horizontal
+        PaintRoadLine(oldX, oldY, oldX, y);
+        PaintRoadLine(oldX, y, x, y);
+    }
+    
+    private void PaintRoadLine(int x1, int y1, int x2, int y2)
+    {
+        // vertical line drawing
+        if (x1 == x2)
+        {
+            if (y1 > y2)
+                Util.Swap(ref y1, ref y2);
 
-	private int GetRoadTurnEnd(int pos, Direction direction, int turn, int turnDst)
-	{
-		if (turn == 1)
-			return pos;
-		
-		if (direction == Direction.North || direction == Direction.East)
-			turn = (turn == 0) ? 2 : 0;
+            for (int y = y1; y <= y2; y++)
+                SetTileTypeAt(x1, y, TileType.Road);
+        }
+        else // horizontal
+        {
+            if (x1 > x2)
+                Util.Swap(ref x1, ref x2);
 
-		pos += (turn == 0) ? -turnDst : turnDst;
-		return pos;
-	}
-
-	private void PaintRoadFrom(int x1, int y1, int x2, int y2, Direction direction)
-	{
-		// FIXME: roads need to be painted with direction awareness
-
-		if (x1 > x2)
-			Util.Swap(ref x1, ref x2);
-		if (y1 > y2)
-			Util.Swap(ref y1, ref y2);
-
-		for (int x = x1; x < x2; x++)
-		{
-			if (GetTileTypeAt(x, y1) == TileType.INVALID)
-				continue;
-			tileMap[x + y1 * Size] = TileType.Road;
-		}
-
-		for (int y = y1; y < y2; y++)
-		{
-			if (GetTileTypeAt(x2, y) == TileType.INVALID)
-				continue;
-			tileMap[x2 + y * Size] = TileType.Road; 
-		}
-	}
+            for (int x = x1; x <= x2; x++)
+                SetTileTypeAt(x, y1, TileType.Road);
+        }
+    }
 
     private void CreateTerrainRep()
     {
@@ -172,6 +167,13 @@ public class Map
         TerrainRep.Generate(this);
 
         TerrainObj.transform.parent = Game.transform;
+    }
+
+    private void SetTileTypeAt(int x, int y, TileType tileType)
+    {
+        if (x >= 0 && x < Size &&
+            y >= 0 && y < Size)
+            tileMap[x + y * Size] = tileType;
     }
 
     public TileType GetTileTypeAt(Vector2 tilePos)
