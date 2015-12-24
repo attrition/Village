@@ -7,12 +7,12 @@ using UnityEngine;
 
 public static class Util
 {
-	public static void Swap<T>(ref T left, ref T right)
-	{
-		T tmp = left;
-		left = right;
-		right = tmp;
-	}
+    public static void Swap<T>(ref T left, ref T right)
+    {
+        T tmp = left;
+        left = right;
+        right = tmp;
+    }
 }
 
 public static class UnityExtensions

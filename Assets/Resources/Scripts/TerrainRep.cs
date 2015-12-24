@@ -163,7 +163,9 @@ public class TerrainRep : MonoBehaviour
     private void GroundClickHandler(GameObject ground, Vector3 clickPos)
     {
         Vector2 tilePos = map.WorldToTilePos(clickPos);
+        MapTile node = map.GetTileAt(tilePos);
+
         Debug.Log("Clicked on " + ground.name + 
-            " " + tilePos + ": " + map.GetTileTypeAt(tilePos));
+            " (" + node.X + "," + node.Y + "): " + node.Tile);
     }
 }

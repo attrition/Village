@@ -13,16 +13,47 @@ public enum TileType
     INVALID,
 }
 
-public enum Direction {
-	North,
-	East,
-	South,
-	West
+public enum Direction
+{
+    North,
+    East,
+    South,
+    West
+}
+
+public class AStarMapNode : Priority_Queue.PriorityQueueNode
+{
+    int f; // estimation of work to reach goal from this tile
+    int g; // cost so far to reach this tile
+    int h; // estimated distance to goal
+
+    public int Cost { get { return f; } }
+
+    public AStarMapNode(int g, int h)
+    {
+        this.g = g;
+        this.h = h;
+        this.f = g + h;
+    }
+}
+
+public class MapTile
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public TileType Tile { get; set; }
+
+    public MapTile(int x, int y, TileType tile)
+    {
+        X = x;
+        Y = y;
+        Tile = tile;
+    }
 }
 
 public class Map
 {
-    private TileType[] tileMap;
+    private MapTile[] tileMap;
     public int Size { get; private set; }
 
     public GameLogic Game;
@@ -47,14 +78,14 @@ public class Map
     private void GenerateTileMap()
     {
         var totalSize = Size * Size;
-        tileMap = new TileType[totalSize];
+        tileMap = new MapTile[totalSize];
 
         // large grass field by default
         for (int i = 0; i < totalSize; i++)
-            tileMap[i] = TileType.Grass;
+            tileMap[i] = new MapTile(i % Size, i / Size, TileType.Grass);
 
         GenerateForests();
-		GenerateRoads();
+        GenerateRoads();
     }
 
     private void CreateTerrainRep()
@@ -129,9 +160,9 @@ public class Map
     #region Road generation
 
     private void GenerateRoads()
-	{
-		// 1:20%, 2:50%, 3:20%, 4:10%
-		var straightDistanceOdds = new int[10] { 1, 1, 2, 2, 2, 2, 2, 3, 3, 4 };
+    {
+        // 1:20%, 2:50%, 3:20%, 4:10%
+        var straightDistanceOdds = new int[10] { 1, 1, 2, 2, 2, 2, 2, 3, 3, 4 };
 
         var turnDistanceOdds = new int[50] {
             -4,
@@ -148,9 +179,9 @@ public class Map
             4
         };
 
-		var directionsLeft = new List<Direction>() { 
-			Direction.North, Direction.East, Direction.South, Direction.West 
-		};
+        var directionsLeft = new List<Direction>() { 
+            Direction.North, Direction.East, Direction.South, Direction.West 
+        };
 
         // two legs of roads, from centre to 2 edges
         for (int leg = 0; leg < 4; leg++)
@@ -170,34 +201,34 @@ public class Map
                 PaintRoad(ref x, ref y, legDirection, straightDistance, turnDistance);
             }
         }
-	}
+    }
     
-	private void PaintRoad(ref int x, ref int y, Direction direction, int strDst, int turnDst)
-	{
-		int oldX = x;
-		int oldY = y;
+    private void PaintRoad(ref int x, ref int y, Direction direction, int strDst, int turnDst)
+    {
+        int oldX = x;
+        int oldY = y;
 
-		if (direction == Direction.North)
-		{
+        if (direction == Direction.North)
+        {
             x += turnDst;
-			y += strDst;
-		}
-		else if (direction == Direction.South)
-		{
+            y += strDst;
+        }
+        else if (direction == Direction.South)
+        {
             x += turnDst;
             y -= strDst;
-		}
-		else if (direction == Direction.West)
-		{
-			x -= strDst;
+        }
+        else if (direction == Direction.West)
+        {
+            x -= strDst;
             y += turnDst;
 
         }
-		else if (direction == Direction.East)
-		{
-			x += strDst;
+        else if (direction == Direction.East)
+        {
+            x += strDst;
             y += turnDst;
-		}
+        }
 
         // paint two lines for a road leg, one vertical one horizontal
         PaintRoadLine(oldX, oldY, oldX, y);
@@ -238,7 +269,7 @@ public class Map
     {
         if (x >= 0 && x < Size &&
             y >= 0 && y < Size)
-            tileMap[x + y * Size] = tileType;
+            tileMap[x + y * Size].Tile = tileType;
     }
 
     public TileType GetTileTypeAt(Vector2 tilePos)
@@ -250,14 +281,28 @@ public class Map
     {
         if (x >= 0 && x < Size &&
             y >= 0 && y < Size)
-            return tileMap[x + y * Size];
+            return tileMap[x + y * Size].Tile;
 
         return TileType.INVALID;
     }
 
+    public MapTile GetTileAt(Vector2 nodePos)
+    {
+        return GetTileAt((int)nodePos.x, (int)nodePos.y);
+    }
+
+    public MapTile GetTileAt(int x, int y)
+    {
+        if (x >= 0 && x < Size &&
+            y >= 0 && y < Size)
+            return tileMap[x + y * Size];
+
+        return null;
+    }
+
     public Vector2 WorldToTilePos(Vector3 worldPos)
     {
-        return new Vector3(Mathf.FloorToInt(worldPos.x),
+        return new Vector2(Mathf.FloorToInt(worldPos.x),
                            Mathf.FloorToInt(worldPos.z));
     }
 
