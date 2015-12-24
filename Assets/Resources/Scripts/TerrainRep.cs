@@ -12,18 +12,7 @@ public class TerrainRep : MonoBehaviour
     private GameObject roadObj;
     private Mesh roadMesh;
     private Material roadMat;
-
-    // Use this for initialization
-    void Start()
-    {
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
+    
     public void Generate(Map map)
     {
         this.map = map;

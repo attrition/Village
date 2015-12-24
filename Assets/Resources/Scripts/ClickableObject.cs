@@ -6,19 +6,7 @@ public delegate void ClickHandler(GameObject obj, Vector3 clickPos);
 public class ClickableObject : MonoBehaviour
 {
     public ClickHandler clickHandler = null;
-
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
+   
     void OnMouseDown()
     {
         if (clickHandler != null)
