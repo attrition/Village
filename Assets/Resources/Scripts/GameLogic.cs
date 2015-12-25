@@ -4,6 +4,8 @@ using System.Collections.Generic;
 public class GameLogic : MonoBehaviour
 {
     private Map map;
+    private AStarPather pathfinder;
+
     public int MapSize = 128;
 
     public float TicksPerSecond = 3;
@@ -16,6 +18,8 @@ public class GameLogic : MonoBehaviour
     void Start()
     {
         map = new Map(this, MapSize);
+        pathfinder = this.gameObject.AddComponent<AStarPather>();
+        pathfinder.UpdateMap(map);
 
         lastTick = Time.time;
         timeBetweenTicks = 1f / TicksPerSecond;
@@ -35,7 +39,5 @@ public class GameLogic : MonoBehaviour
     private void OnTick()
     {
         GameTick++;
-
-
     }
 }
