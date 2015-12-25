@@ -23,11 +23,13 @@ public enum Direction
 
 public class AStarMapNode : Priority_Queue.PriorityQueueNode
 {
-    public int Cost { get; private set; }
+    public MapTile Tile { get; private set; }
+    public int Cost { get; set; }
 
-    public AStarMapNode(int g, int h)
+    public AStarMapNode(MapTile tile, int cost)
     {
-        Cost = g + h;
+        Tile = tile;
+        Cost = cost;
     }
 }
 
@@ -68,7 +70,7 @@ public class Map
 
         GenerateTileMap();
         CreateTerrainRep();
-        GenerateMapLabels();        
+        GenerateMapLabels();
     }
 
     private void GenerateMapLabels()
@@ -81,6 +83,25 @@ public class Map
         var newLabel = new GameObject(label).AddComponent<MapLabel>();
         newLabel.transform.parent = MapLabels.transform;
         newLabel.Init(x, y, label);
+    }
+
+    public void DrawDebugPath(Queue<Vector2> path, float seconds, Color colour)
+    {
+        if (path.Count < 2)
+            return;
+
+        Vector2 prev = path.Dequeue();
+
+        while (path.Count != 0)
+        {
+            Vector2 next = path.Dequeue();            
+            Debug.DrawLine(new Vector3(prev.x + 0.5f, 0f, prev.y + 0.5f),
+                           new Vector3(next.x + 0.5f, 0f, next.y + 0.5f),
+                           colour,
+                           seconds,
+                           false);
+            prev = next;
+        }
     }
 
     private void GenerateTileMap()
