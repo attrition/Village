@@ -80,12 +80,16 @@ public class AStarPather : MonoBehaviour
             if (working.Count == 0 || !Ready)
                 yield return new WaitUntil(() => working.Count != 0 && Ready);
 
-            var task = working.Dequeue();
+            while (working.Count != 0 && Ready)
+            {
+                var task = working.Dequeue();
 
-            // solve pathing task
-            //complete.Enqueue(task);
-            var completePath = new Stack<MapTile>();
-            task.Callback(completePath);
+                // solve pathing task
+                //complete.Enqueue(task);
+                var completePath = new Stack<MapTile>();
+                task.Callback(completePath);
+                yield return null;
+            }
         }
     }
 
