@@ -23,17 +23,11 @@ public enum Direction
 
 public class AStarMapNode : Priority_Queue.PriorityQueueNode
 {
-    int f; // estimation of work to reach goal from this tile
-    int g; // cost so far to reach this tile
-    int h; // estimated distance to goal
-
-    public int Cost { get { return f; } }
+    public int Cost { get; private set; }
 
     public AStarMapNode(int g, int h)
     {
-        this.g = g;
-        this.h = h;
-        this.f = g + h;
+        Cost = g + h;
     }
 }
 
@@ -60,6 +54,7 @@ public class Map
     public GameObject TerrainObj;   // where the map creation and click events will happen, however handlers
                                     // will be passed to mapRep so all map logic happens in this class
     public TerrainRep TerrainRep;
+    public GameObject MapLabels;
 
     public Map(GameLogic game, int size)
     {
@@ -73,6 +68,19 @@ public class Map
 
         GenerateTileMap();
         CreateTerrainRep();
+        GenerateMapLabels();        
+    }
+
+    private void GenerateMapLabels()
+    {
+        MapLabels = new GameObject("Map Labels");
+    }
+
+    public void AddLabel(int x, int y, string label)
+    {
+        var newLabel = new GameObject(label).AddComponent<MapLabel>();
+        newLabel.transform.parent = MapLabels.transform;
+        newLabel.Init(x, y, label);
     }
 
     private void GenerateTileMap()

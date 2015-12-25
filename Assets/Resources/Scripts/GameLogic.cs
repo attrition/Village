@@ -5,7 +5,7 @@ public class GameLogic : MonoBehaviour
 {
     private Map map;
 
-    public int MapSize;
+    public int MapSize = 128;
 
     // Use this for initialization
     void Start()
