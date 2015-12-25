@@ -21,18 +21,6 @@ public enum Direction
     West
 }
 
-public class AStarMapNode : Priority_Queue.PriorityQueueNode
-{
-    public MapTile Tile { get; private set; }
-    public int Cost { get; set; }
-
-    public AStarMapNode(MapTile tile, int cost)
-    {
-        Tile = tile;
-        Cost = cost;
-    }
-}
-
 public class MapTile
 {
     public int X { get; set; }
