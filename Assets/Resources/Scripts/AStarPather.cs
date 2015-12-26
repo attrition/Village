@@ -39,16 +39,14 @@ public class AStarPather : MonoBehaviour
 {
     public Map Map { get; private set; }
 
-    public Queue<PathingTask> complete;
-    public Queue<PathingTask> working;
+    public Queue<PathingTask> tasks;
 
     public int Tasks = 0;
     public bool Ready = false;
 
     private void Awake()
     {
-        complete = new Queue<PathingTask>();
-        working = new Queue<PathingTask>();
+        tasks = new Queue<PathingTask>();
     }
 
     private void Start()
@@ -70,22 +68,24 @@ public class AStarPather : MonoBehaviour
 
     public void AddTask(PathingTask newTask)
     {
-        working.Enqueue(newTask);
+        tasks.Enqueue(newTask);
     }
 
     private IEnumerator UpdatePathingTasks()
     {
         while (true)
         {
-            if (working.Count == 0 || !Ready)
-                yield return new WaitUntil(() => working.Count != 0 && Ready);
+            if (tasks.Count == 0 || !Ready)
+                yield return new WaitUntil(() => tasks.Count != 0 && Ready);
 
-            while (working.Count != 0 && Ready)
+            while (tasks.Count != 0 && Ready)
             {
-                var task = working.Dequeue();
+                var task = tasks.Dequeue();
 
                 // solve pathing task
-                //complete.Enqueue(task);
+                
+
+                // return completed path to caller
                 var completePath = new Stack<MapTile>();
                 task.Callback(completePath);
                 yield return null;
@@ -93,20 +93,11 @@ public class AStarPather : MonoBehaviour
         }
     }
 
-    public PathingTask[] GetCompleteTasks()
-    {
-        var completed = new PathingTask[complete.Count];
-        complete.CopyTo(completed, 0);
-        complete.Clear();
-
-        return completed;
-    }
-
     public void Update()
     {
         if (!Ready)
             return;
 
-        Tasks = working.Count;
+        Tasks = tasks.Count;
     }
 }

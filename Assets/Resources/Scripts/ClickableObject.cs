@@ -11,7 +11,6 @@ public class ClickableObject : MonoBehaviour
     {
         if (clickHandler != null)
         {
-
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
