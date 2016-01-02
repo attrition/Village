@@ -9,13 +9,22 @@ public class GameLogic : MonoBehaviour
     public GameObject UnitObjects;
     public List<GameObject> Units;
 
-    public int MapSize = 128;
-
     public uint GameTick = 0;
+
+    public int MapSize = 128;
+    public int GameSeed = 0;
 
     private float ticksPerSecond = 8;
     private float timeBetweenTicks = 0.125f;
     private float lastTick = 0f;
+
+    void Awake()
+    {
+        if (GameSeed == 0)
+            GameSeed = System.Guid.NewGuid().GetHashCode();
+
+        Random.seed = GameSeed;
+    }
 
     // Use this for initialization
     void Start()
