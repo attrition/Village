@@ -51,6 +51,10 @@ public class GameLogic : MonoBehaviour
                 unit.transform.parent = UnitObjects.transform;
             }
         }
+
+        var u = Units[0].GetComponent<Unit>();
+        Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, u.X + 5, u.Y + 5, DebugCallbackComplete));
+
     }
 
     // Update is called once per frame
@@ -62,6 +66,11 @@ public class GameLogic : MonoBehaviour
             lastTick = Time.time;
             OnTick();
         }
+    }
+
+    private void DebugCallbackComplete(Stack<MapTile> completePath)
+    {
+        Debug.Log("Completed debug path");
     }
 
     private void OnTick()

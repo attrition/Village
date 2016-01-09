@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Priority_Queue;
 using System.Collections.Generic;
 
 public enum TileType
@@ -21,17 +22,17 @@ public enum Direction
     West
 }
 
-public class MapTile
+public class MapTile : PriorityQueueNode
 {
     public int X { get; set; }
     public int Y { get; set; }
-    public TileType Tile { get; set; }
+    public TileType Type { get; set; }
 
     public MapTile(int x, int y, TileType tile)
     {
         X = x;
         Y = y;
-        Tile = tile;
+        Type = tile;
     }
 }
 
@@ -45,6 +46,14 @@ public class Map
                                     // will be passed to mapRep so all map logic happens in this class
     public TerrainRep TerrainRep;
     public GameObject MapLabels;
+
+    // movement time to cross a tile (unit speed modifier)
+    public readonly Dictionary<TileType, float> MovementCosts = new Dictionary<TileType, float>()
+    {
+        { TileType.Grass, 1.5f },
+        { TileType.Road, 1 },
+        { TileType.Trees, 5 },
+    };
 
     public Map(GameLogic game, int size)
     {
@@ -286,7 +295,7 @@ public class Map
     {
         if (x >= 0 && x < Size &&
             y >= 0 && y < Size)
-            tileMap[x + y * Size].Tile = tileType;
+            tileMap[x + y * Size].Type = tileType;
     }
 
     public TileType GetTileTypeAt(Vector2 tilePos)
@@ -298,7 +307,7 @@ public class Map
     {
         if (x >= 0 && x < Size &&
             y >= 0 && y < Size)
-            return tileMap[x + y * Size].Tile;
+            return tileMap[x + y * Size].Type;
 
         return TileType.INVALID;
     }

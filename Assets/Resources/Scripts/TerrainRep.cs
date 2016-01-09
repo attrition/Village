@@ -166,6 +166,6 @@ public class TerrainRep : MonoBehaviour
         MapTile node = map.GetTileAt(tilePos);
 
         Debug.Log("Clicked on " + ground.name + 
-            " (" + node.X + "," + node.Y + "): " + node.Tile);
+            " (" + node.X + "," + node.Y + "): " + node.Type);
     }
 }
