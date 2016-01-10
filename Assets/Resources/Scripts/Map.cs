@@ -51,7 +51,7 @@ public class Map
     public readonly Dictionary<TileType, double> MovementCosts = new Dictionary<TileType, double>()
     {
         { TileType.Grass, 1d },
-        { TileType.Road, 0.25d },
+        { TileType.Road, 0.5d },
         { TileType.Trees, 3d },
     };
 
@@ -96,18 +96,18 @@ public class Map
         newLabel.Init(x, y, label);
     }
 
-    public void DrawDebugPath(Queue<Vector2> path, float seconds, Color colour)
+    public void DrawDebugPath(Stack<MapTile> path, float seconds, Color colour)
     {
         if (path.Count < 2)
             return;
 
-        Vector2 prev = path.Dequeue();
+        var prev = path.Pop();
 
         while (path.Count != 0)
         {
-            Vector2 next = path.Dequeue();            
-            Debug.DrawLine(new Vector3(prev.x + 0.5f, 0f, prev.y + 0.5f),
-                           new Vector3(next.x + 0.5f, 0f, next.y + 0.5f),
+            var next = path.Pop();
+            Debug.DrawLine(new Vector3(prev.X + 0.5f, 0f, prev.Y + 0.5f),
+                           new Vector3(next.X + 0.5f, 0f, next.Y + 0.5f),
                            colour,
                            seconds,
                            false);

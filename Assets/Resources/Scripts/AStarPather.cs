@@ -74,7 +74,7 @@ public class AStarPather : MonoBehaviour
                 // solve pathing task
                 var task = tasks.Dequeue();                
                 
-                var open = new FastPriorityQueue<MapTile>(2048*2048);
+                var open = new FastPriorityQueue<MapTile>(Map.Size * Map.Size);
                 var costSoFar = new Dictionary<MapTile, double>();
 
                 var minCost = task.Unit.Details.Speed * Map.MovementCosts[TileType.Road];
@@ -102,9 +102,9 @@ public class AStarPather : MonoBehaviour
                     var neighbours = new List<MapTile>()
                     {
                         Map.GetTileAt(  node.X - 1,   node.Y      ),
+                        Map.GetTileAt(  node.X + 1,   node.Y      ),
                         Map.GetTileAt(  node.X,       node.Y + 1  ),
                         Map.GetTileAt(  node.X,       node.Y - 1  ),
-                        Map.GetTileAt(  node.X + 1,   node.Y      ),
                     };
 
                     foreach (var neighbour in neighbours)
@@ -130,19 +130,53 @@ public class AStarPather : MonoBehaviour
                             else
                                 open.Enqueue(neighbour, f);
                             
-                            Map.AddLabel(neighbour.X, neighbour.Y, ((int)f).ToString());
+                            Map.AddLabel(neighbour.X, neighbour.Y, ((int)g).ToString());
                         }
-
-                        //Debug.DrawLine(new Vector3(x + 0.5f, 0f, y + 0.5f), new Vector3(xN + 0.5f, 0f, yN + 0.5f), Color.red, 15f);
                     }
 
                     yield return null;
-                }                
+                }
 
                 // return completed path to caller
                 var completePath = new Stack<MapTile>();
+
+                MapTile lowest = goal;
+                MapTile curr = goal;
+
+                while (curr != start)
+                {
+                    completePath.Push(curr);
+
+                    var neighbours = new List<MapTile>()
+                    {
+                        Map.GetTileAt(curr.X - 1, curr.Y),
+                        Map.GetTileAt(curr.X + 1, curr.Y),
+                        Map.GetTileAt(curr.X, curr.Y - 1),
+                        Map.GetTileAt(curr.X, curr.Y + 1),
+                    };
+
+                    var lowestCost = costSoFar[curr];
+                    foreach (var neighbour in neighbours)
+                    {
+                        if (neighbour == null || !costSoFar.ContainsKey(neighbour))
+                            continue;
+
+                        if (costSoFar[neighbour] < lowestCost)
+                        {
+                            lowestCost = costSoFar[neighbour];
+                            lowest = neighbour;
+                        }
+                    }
+
+                    curr = lowest;                    
+                }
+
+                // include start for testing purposes
+                // not as useful for actual pathing
+                completePath.Push(start);
                 if (task.Callback != null)
                     task.Callback(completePath);
+
                 yield return null;
             }
         }
@@ -150,7 +184,7 @@ public class AStarPather : MonoBehaviour
 
     private double ManhattanHeuristic(MapTile a, MapTile b, double d)
     {
-        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y));
+        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y)) + Random.value;
     }
 
     public void Update()

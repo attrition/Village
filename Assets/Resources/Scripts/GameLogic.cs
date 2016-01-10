@@ -71,6 +71,7 @@ public class GameLogic : MonoBehaviour
     private void DebugCallbackComplete(Stack<MapTile> completePath)
     {
         Debug.Log("Completed debug path");
+        Map.DrawDebugPath(completePath, 30f, Color.blue);
     }
 
     private void OnTick()

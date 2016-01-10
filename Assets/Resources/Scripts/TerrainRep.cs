@@ -83,7 +83,7 @@ public class TerrainRep : MonoBehaviour
         Destroy(coll.sharedMesh);
         coll.sharedMesh = roadMesh;
 
-        click.clickHandler = this.GroundClickHandler;
+        click.clickHandler = GroundClickHandler;
     }
 
     private void CreateGroundMesh()
@@ -153,8 +153,7 @@ public class TerrainRep : MonoBehaviour
                     treeObj.transform.position = treeObj.transform.position + new Vector3(0f, scale.y - (scale.y / 2f), 0f);
                     treeObj.transform.parent = treesObj.transform;
 
-                    var click = treeObj.GetComponent<ClickableObject>();
-                    click.clickHandler = GroundClickHandler;
+                    treeObj.GetOrAddComponent<ClickableObject>().clickHandler = GroundClickHandler;
                 }
             }
         }

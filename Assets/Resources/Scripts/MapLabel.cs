@@ -14,9 +14,8 @@ public class MapLabel : MonoBehaviour
 
         mesh = this.gameObject.AddComponent<TextMesh>();
         mesh.text = label;
-        mesh.fontSize = 16;
         mesh.anchor = TextAnchor.MiddleCenter;
-        mesh.fontSize = 50;
+        mesh.fontSize = 100;
         mesh.characterSize = 0.05f;
 
         mesh.transform.position = new Vector3(rx, 2.1f, ry);
