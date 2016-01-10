@@ -22,8 +22,8 @@ public enum Direction
     West
 }
 
-public class MapTile : PriorityQueueNode
-{
+public class MapTile : FastPriorityQueueNode
+{ 
     public int X { get; set; }
     public int Y { get; set; }
     public TileType Type { get; set; }
@@ -48,11 +48,11 @@ public class Map
     public GameObject MapLabels;
 
     // movement time to cross a tile (unit speed modifier)
-    public readonly Dictionary<TileType, float> MovementCosts = new Dictionary<TileType, float>()
+    public readonly Dictionary<TileType, double> MovementCosts = new Dictionary<TileType, double>()
     {
-        { TileType.Grass, 1.5f },
-        { TileType.Road, 1 },
-        { TileType.Trees, 5 },
+        { TileType.Grass, 1d },
+        { TileType.Road, 0.25d },
+        { TileType.Trees, 3d },
     };
 
     public Map(GameLogic game, int size)
@@ -77,6 +77,20 @@ public class Map
 
     public void AddLabel(int x, int y, string label)
     {
+        var updated = false;
+        foreach (var existing in MapLabels.GetComponentsInChildren<MapLabel>())
+        {
+            if (existing.transform.position.x == x  + 0.5f && existing.transform.position.z == y + 0.5f)
+            {
+                existing.Label = label;
+                updated = true;
+                break;
+            }
+        }
+
+        if (updated)
+            return;
+
         var newLabel = new GameObject(label).AddComponent<MapLabel>();
         newLabel.transform.parent = MapLabels.transform;
         newLabel.Init(x, y, label);

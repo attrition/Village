@@ -53,8 +53,8 @@ public class GameLogic : MonoBehaviour
         }
 
         var u = Units[0].GetComponent<Unit>();
-        Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, u.X + 5, u.Y + 5, DebugCallbackComplete));
-
+        Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
+        Units.Add(UnitObjectFactory.MakeVillager(this, 64, 64));
     }
 
     // Update is called once per frame

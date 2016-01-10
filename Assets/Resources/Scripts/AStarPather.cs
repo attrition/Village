@@ -72,75 +72,71 @@ public class AStarPather : MonoBehaviour
             while (tasks.Count != 0 && Ready)
             {
                 // solve pathing task
-                var task = tasks.Dequeue();
-                bool done = false;
+                var task = tasks.Dequeue();                
+                
+                var open = new FastPriorityQueue<MapTile>(2048*2048);
+                var costSoFar = new Dictionary<MapTile, double>();
 
-                // worst case handling of 1024*1024
-                var open = new HeapPriorityQueue<MapTile>(1048576);
-                var closed = new Dictionary<MapTile, double>();
-                var openCosts = new Dictionary<MapTile, double>();
+                var minCost = task.Unit.Details.Speed * Map.MovementCosts[TileType.Road];
 
                 // add starting tile to open list
-                double cost = ManhattanDistance(task.StartX, task.StartY, task.EndX, task.EndY);
-                var startTile = Map.GetTileAt(task.StartX, task.StartY);
-                open.Enqueue(startTile, cost); // g + h
-                openCosts.Add(startTile, cost); // g FIX THIS
+                var start = Map.GetTileAt(task.StartX, task.StartY);
+                var goal = Map.GetTileAt(task.EndX, task.EndY);
+
+                open.Enqueue(start, 0);
+                costSoFar.Add(start, 0);
 
                 // path to goal
-                while (!done)
+                while (true)
                 {
                     if (open.Count == 0)
-                        break;                    
-
-                    var node = open.Dequeue();
-                    closed.Add(node, cost);
-                    
-                    // rewind path if found
-                    if (node.X == task.EndX && node.Y == task.EndY)
                         break;
 
-                    int x = node.X;
-                    int y = node.Y;
-
+                    var node = open.Dequeue();
+                    
+                    // rewind path if found
+                    if (node == goal)
+                        break;
+                    
                     // add/inspect neighbours
-                    for (int xN = x - 1; xN <= x + 1; xN++)
+                    var neighbours = new List<MapTile>()
                     {
-                        for (int yN = y - 1; yN <= y + 1; yN++)
+                        Map.GetTileAt(  node.X - 1,   node.Y      ),
+                        Map.GetTileAt(  node.X,       node.Y + 1  ),
+                        Map.GetTileAt(  node.X,       node.Y - 1  ),
+                        Map.GetTileAt(  node.X + 1,   node.Y      ),
+                    };
+
+                    foreach (var neighbour in neighbours)
+                    {
+                        if (neighbour == null || costSoFar.ContainsKey(neighbour))
+                            continue;
+                        
+                        var movecost = (task.Unit.Details.Speed * Map.MovementCosts[neighbour.Type]);
+                        var g = costSoFar[node] + movecost;
+
+                        // if not in open or is in open and new path is faster
+                        if (!open.Contains(neighbour) || 
+                            (costSoFar.ContainsKey(neighbour) && g < costSoFar[neighbour]))
                         {
-                            // skip current tile
-                            if (xN == x && yN == y)
-                                continue;
+                            // f = g + h
+                            double h = (ManhattanHeuristic(neighbour, goal, minCost) * (1.001d));
+                            double f = g + h;
 
-                            // out of bounds check
-                            if (xN >= Map.Size || yN >= Map.Size || xN < 0 || yN < 0)
-                                continue;
-
-                            var neighbour = Map.GetTileAt(xN, yN);
-
-                            // move = old cost + movement cost to neighbour
-                            var movecost = openCosts[node] + (task.Unit.Details.Speed * Map.MovementCosts[neighbour.Type]);
-
-                            double neighbourcost = double.MaxValue;
-                            if (openCosts.ContainsKey(neighbour))
-                                neighbourcost = openCosts[neighbour];
-
-                            // if new path is better remove neighbour from open list
-                            if (open.Contains(neighbour) && movecost < neighbourcost)
-                                open.Remove(neighbour);
-                            else if (closed.ContainsKey(neighbour) && movecost < neighbourcost)
-                                closed.Remove(neighbour);
-                            else if (!open.Contains(neighbour) && !closed.ContainsKey(neighbour))
-                            {
-                                double newcost = movecost + ManhattanDistance(xN, yN, task.EndX, task.EndY);
-                                openCosts.Add(neighbour, movecost);
-                                open.Enqueue(neighbour, newcost);
-                            }
-
-                            Debug.DrawLine(new Vector3(x + 0.5f, 0f, y + 0.5f), new Vector3(xN + 0.5f, 0f, yN + 0.5f), Color.red, 15f);
+                            // we keep track of g (cost to travel to node) but examine them in order of f (g + heuristic)
+                            costSoFar[neighbour] = g;
+                            if (open.Contains(neighbour))
+                                open.UpdatePriority(neighbour, f);
+                            else
+                                open.Enqueue(neighbour, f);
+                            
+                            Map.AddLabel(neighbour.X, neighbour.Y, ((int)f).ToString());
                         }
+
+                        //Debug.DrawLine(new Vector3(x + 0.5f, 0f, y + 0.5f), new Vector3(xN + 0.5f, 0f, yN + 0.5f), Color.red, 15f);
                     }
 
-                    //yield return null;
+                    yield return null;
                 }                
 
                 // return completed path to caller
@@ -152,9 +148,9 @@ public class AStarPather : MonoBehaviour
         }
     }
 
-    private double ManhattanDistance(int x1, int y1, int x2, int y2)
+    private double ManhattanHeuristic(MapTile a, MapTile b, double d)
     {
-        return Mathf.Abs(x1 - x2) + Mathf.Abs(y1 - y2);
+        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y));
     }
 
     public void Update()
