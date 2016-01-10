@@ -346,6 +346,11 @@ public class Map
                            Mathf.FloorToInt(worldPos.z));
     }
 
+    public double GetMovementCostAt(MapTile tile, Unit unit)
+    {
+        return MovementCosts[tile.Type] * unit.Details.Speed;
+    }
+
     #endregion
 
 }

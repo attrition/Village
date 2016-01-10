@@ -114,8 +114,8 @@ public class AStarPather : MonoBehaviour
                     {
                         if (neighbour == null || costSoFar.ContainsKey(neighbour))
                             continue;
-                        
-                        var movecost = (task.Unit.Details.Speed * Map.MovementCosts[neighbour.Type]);
+
+                        var movecost = Map.GetMovementCostAt(neighbour, task.Unit);
                         var g = costSoFar[node] + movecost;
 
                         // if not in open or is in open and new path is faster
@@ -123,7 +123,7 @@ public class AStarPather : MonoBehaviour
                             (costSoFar.ContainsKey(neighbour) && g < costSoFar[neighbour]))
                         {
                             // f = g + h
-                            double h = (ManhattanHeuristic(neighbour, goal, minCost) * (1.6d));
+                            double h = ManhattanHeuristic(start, neighbour, goal, minCost);
                             double f = g + h;
 
                             // we keep track of g (cost to travel to node) but examine them in order of f (g + heuristic)
@@ -138,7 +138,7 @@ public class AStarPather : MonoBehaviour
                     }
 
                     // 16ms allocated per frame
-                    if ((System.DateTime.Now.Ticks - frameTime) / 10000l > 16l)
+                    if ((System.DateTime.Now.Ticks - frameTime) / 10000L > 16L)
                     {
                         //Debug.Log("yielding: " + (System.DateTime.Now.Ticks - frameTime) / 10000l);
                         frameTime = System.DateTime.Now.Ticks;
@@ -178,13 +178,9 @@ public class AStarPather : MonoBehaviour
                     }
 
                     curr = lowest;                    
-                }
+                }            
 
-                // include start for testing purposes
-                // not as useful for actual pathing
-                completePath.Push(start);
-
-                Debug.Log("Pathing complete in: " + (System.DateTime.Now.Ticks - task.TimeQueued) / 10000l);
+                //Debug.Log("Pathing complete in: " + (System.DateTime.Now.Ticks - task.TimeQueued) / 10000L);
                 if (task.Callback != null)
                     task.Callback(completePath);
 
@@ -193,9 +189,18 @@ public class AStarPather : MonoBehaviour
         }
     }
 
-    private double ManhattanHeuristic(MapTile a, MapTile b, double d)
+    private double ManhattanHeuristic(MapTile start, MapTile current, MapTile goal, double d)
     {
-        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y)) + (Random.value * 2f);
+        var dx1 = current.X - goal.X;
+        var dy1 = current.Y - goal.Y;
+        var dx2 = start.X - goal.X;
+        var dy2 = start.Y - goal.Y;
+        var cross = Mathf.Abs(dx1 * dy2 - dx2 * dy1);
+        var heuristic = (d * 2d) * (Mathf.Abs(current.X - goal.X) + Mathf.Abs(current.Y - goal.Y));
+        heuristic += cross * 0.001d;
+        heuristic *= 1.001d;
+
+        return heuristic;
     }
 
     public void Update()

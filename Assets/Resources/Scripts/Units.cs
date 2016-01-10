@@ -62,9 +62,9 @@ public static class UnitDetailFactory
         return new UnitDetail
         {
             DefHealth = 60,
-            DefSpeed = 5,
+            DefSpeed = 3,
             Health = 60,
-            Speed = 5,
+            Speed = 3,
             Name = "Villager",
             Type = UnitDetail.UnitType.Villager,
             Weapon = null,
@@ -79,8 +79,8 @@ public static class UnitDetailFactory
         {
             DefHealth = 120,
             Health = 120,
-            DefSpeed = 4,
-            Speed = 4,
+            DefSpeed = 2,
+            Speed = 2,
             Name = "Warrior",
             Type = UnitDetail.UnitType.Warrior,
             Weapon = null,
@@ -129,6 +129,7 @@ public static class UnitObjectFactory
     }
 }
 
+
 public class Unit : MonoBehaviour
 {
     public GameLogic Game { get; set; }
@@ -169,6 +170,12 @@ public class Unit : MonoBehaviour
     {
         X = x;
         Y = y;
+        transform.position = new Vector3(x, 0f, y);
+    }
+
+    public void PathingComplete(Stack<MapTile> path)
+    {
+        Path = path;
     }
 }
 
@@ -188,7 +195,17 @@ public class VillagerAI : IUnitAI
 
     public void NextAction()
     {
-        unit.TicksTilNextAction = unit.Details.Speed;
+        var nextAction = unit.Details.Speed;
+
+        if (unit.Path != null &&
+            unit.Path.Count > 0)
+        {
+            var step = unit.Path.Pop();
+            unit.Move(step.X, step.Y);
+            nextAction = (int)unit.Game.Map.GetMovementCostAt(step, unit);
+        }
+
+        unit.TicksTilNextAction = nextAction;
     }
 }
 

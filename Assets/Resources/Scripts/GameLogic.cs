@@ -14,8 +14,8 @@ public class GameLogic : MonoBehaviour
     public int MapSize = 128;
     public int GameSeed = 0;
 
-    private float ticksPerSecond = 8;
-    private float timeBetweenTicks = 0.125f;
+    private float ticksPerSecond = 10;
+    private float timeBetweenTicks = 0.100f;
     private float lastTick = 0f;
 
     void Awake()
@@ -76,13 +76,22 @@ public class GameLogic : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             var u = AddVilligar().GetComponent<Unit>();
-            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, u.PathingComplete));
         }
         if (Input.GetKeyDown(KeyCode.Return))
         {
             var u = AddVilligar(0, 0).GetComponent<Unit>();
-            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 127, 127, u.PathingComplete));
         }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            for (int i = 0; i < 200; i++)
+            {
+                var u = AddVilligar().GetComponent<Unit>();
+                Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, u.PathingComplete));
+            }
+        }
+
     }
 
     private void DebugCallbackComplete(Stack<MapTile> completePath)
