@@ -52,7 +52,7 @@ public class Map
     {
         { TileType.Grass, 1d },
         { TileType.Road, 0.5d },
-        { TileType.Trees, 3d },
+        { TileType.Trees, 2d },
     };
 
     public Map(GameLogic game, int size)

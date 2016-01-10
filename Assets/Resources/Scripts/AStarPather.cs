@@ -13,6 +13,7 @@ public struct PathingTask
     public int EndX;
     public int EndY;
     public PathCompleteCallback Callback;
+    public long TimeQueued;
 
     public PathingTask(Unit unit, int startX, int startY, int endX, int endY, PathCompleteCallback callback)
     {
@@ -22,6 +23,7 @@ public struct PathingTask
         EndX = endX;
         EndY = endY;
         Callback = callback;
+        TimeQueued = System.DateTime.Now.Ticks;
     }
 }
 
@@ -72,8 +74,9 @@ public class AStarPather : MonoBehaviour
             while (tasks.Count != 0 && Ready)
             {
                 // solve pathing task
-                var task = tasks.Dequeue();                
-                
+                var task = tasks.Dequeue();
+                long frameTime = System.DateTime.Now.Ticks;
+
                 var open = new FastPriorityQueue<MapTile>(Map.Size * Map.Size);
                 var costSoFar = new Dictionary<MapTile, double>();
 
@@ -82,9 +85,9 @@ public class AStarPather : MonoBehaviour
                 // add starting tile to open list
                 var start = Map.GetTileAt(task.StartX, task.StartY);
                 var goal = Map.GetTileAt(task.EndX, task.EndY);
-
+                
                 open.Enqueue(start, 0);
-                costSoFar.Add(start, 0);
+                costSoFar[start] = 0;
 
                 // path to goal
                 while (true)
@@ -93,7 +96,7 @@ public class AStarPather : MonoBehaviour
                         break;
 
                     var node = open.Dequeue();
-                    
+
                     // rewind path if found
                     if (node == goal)
                         break;
@@ -120,7 +123,7 @@ public class AStarPather : MonoBehaviour
                             (costSoFar.ContainsKey(neighbour) && g < costSoFar[neighbour]))
                         {
                             // f = g + h
-                            double h = (ManhattanHeuristic(neighbour, goal, minCost) * (1.001d));
+                            double h = (ManhattanHeuristic(neighbour, goal, minCost) * (1.6d));
                             double f = g + h;
 
                             // we keep track of g (cost to travel to node) but examine them in order of f (g + heuristic)
@@ -130,11 +133,17 @@ public class AStarPather : MonoBehaviour
                             else
                                 open.Enqueue(neighbour, f);
                             
-                            Map.AddLabel(neighbour.X, neighbour.Y, ((int)g).ToString());
+                            //Map.AddLabel(neighbour.X, neighbour.Y, ((int)g).ToString());
                         }
                     }
 
-                    yield return null;
+                    // 16ms allocated per frame
+                    if ((System.DateTime.Now.Ticks - frameTime) / 10000l > 16l)
+                    {
+                        //Debug.Log("yielding: " + (System.DateTime.Now.Ticks - frameTime) / 10000l);
+                        frameTime = System.DateTime.Now.Ticks;
+                        yield return null;
+                    }
                 }
 
                 // return completed path to caller
@@ -174,6 +183,8 @@ public class AStarPather : MonoBehaviour
                 // include start for testing purposes
                 // not as useful for actual pathing
                 completePath.Push(start);
+
+                Debug.Log("Pathing complete in: " + (System.DateTime.Now.Ticks - task.TimeQueued) / 10000l);
                 if (task.Callback != null)
                     task.Callback(completePath);
 
@@ -184,7 +195,7 @@ public class AStarPather : MonoBehaviour
 
     private double ManhattanHeuristic(MapTile a, MapTile b, double d)
     {
-        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y)) + Random.value;
+        return d * (Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y)) + (Random.value * 2f);
     }
 
     public void Update()

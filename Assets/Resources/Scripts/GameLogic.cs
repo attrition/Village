@@ -37,24 +37,30 @@ public class GameLogic : MonoBehaviour
         timeBetweenTicks = 1f / ticksPerSecond;
 
         UnitObjects = new GameObject("Units");
-        for (int i = 0; i < 10; i++)
+    }
+
+    private GameObject AddVilligar(int xIn = -1, int yIn = -1)
+    {
+        int x = xIn, y = yIn;
+
+        if (x == -1 || y == -1)
         {
-            var x = Random.Range(0, Map.Size);
-            var y = Random.Range(0, Map.Size);
-            var type = Map.GetTileTypeAt(x, y);
-
-            if (type == TileType.Grass || type == TileType.Road)
+            while (true)
             {
-                var unit = UnitObjectFactory.MakeVillager(this, x, y);
-                Units.Add(unit);
+                x = Random.Range(0, Map.Size);
+                y = Random.Range(0, Map.Size);
+                var type = Map.GetTileTypeAt(x, y);
 
-                unit.transform.parent = UnitObjects.transform;
+                if (type == TileType.Grass || type == TileType.Road)
+                    break;
             }
         }
 
-        var u = Units[0].GetComponent<Unit>();
-        Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
-        Units.Add(UnitObjectFactory.MakeVillager(this, 64, 64));
+        var unit = UnitObjectFactory.MakeVillager(this, x, y);
+        Units.Add(unit);
+
+        unit.transform.parent = UnitObjects.transform;
+        return unit;
     }
 
     // Update is called once per frame
@@ -66,12 +72,23 @@ public class GameLogic : MonoBehaviour
             lastTick = Time.time;
             OnTick();
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            var u = AddVilligar().GetComponent<Unit>();
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
+        }
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            var u = AddVilligar(0, 0).GetComponent<Unit>();
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, DebugCallbackComplete));
+        }
     }
 
     private void DebugCallbackComplete(Stack<MapTile> completePath)
     {
         Debug.Log("Completed debug path");
-        Map.DrawDebugPath(completePath, 30f, Color.blue);
+        Map.DrawDebugPath(completePath, 60f, Color.magenta);
     }
 
     private void OnTick()
