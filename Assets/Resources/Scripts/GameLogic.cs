@@ -14,34 +14,49 @@ public class GameLogic : MonoBehaviour
     public int MapSize = 128;
     public int GameSeed = 0;
 
-    private float ticksPerSecond = 10;
+    private float ticksPerSecond = 10f;
     private float timeBetweenTicks = 0.100f;
     private float lastTick = 0f;
 
     void Awake()
     {
-        if (GameSeed == 0)
-            GameSeed = System.Guid.NewGuid().GetHashCode();
-
-        Random.seed = GameSeed;
     }
 
     // Use this for initialization
     void Start()
     {
+        NewGame(GameSeed == 0);
+    }
+
+    private void NewGame(bool newSeed)
+    {
+        if (newSeed)
+            GameSeed = System.Guid.NewGuid().GetHashCode();
+
+        Random.seed = GameSeed;
+
+        Destroy(GameObject.Find("Trees"));
+        Destroy(GameObject.Find("Map Labels"));
+        Destroy(GameObject.Find("Units"));
+        Destroy(GameObject.Find("TerrainRep"));
+
         Map = new Map(this, MapSize);
+
+        Destroy(gameObject.GetComponent<AStarPather>());
         Pathfinder = gameObject.AddComponent<AStarPather>();
         Pathfinder.UpdateMap(Map);
 
         lastTick = Time.time;
         timeBetweenTicks = 1f / ticksPerSecond;
 
+        Units = new List<GameObject>();
         UnitObjects = new GameObject("Units");
     }
 
     private GameObject AddVilligar(int xIn = -1, int yIn = -1)
     {
-        int x = xIn, y = yIn;
+        int x = xIn;
+        int y = yIn;
 
         if (x == -1 || y == -1)
         {
@@ -76,28 +91,31 @@ public class GameLogic : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             var u = AddVilligar().GetComponent<Unit>();
-            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, u.PathingComplete));
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, Map.Size / 2, Map.Size / 2, u.PathingComplete));
         }
         if (Input.GetKeyDown(KeyCode.Return))
         {
             var u = AddVilligar(0, 0).GetComponent<Unit>();
-            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 127, 127, u.PathingComplete));
+            Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, Map.Size - 1, Map.Size - 1, u.PathingComplete));
         }
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.P))
         {
             for (int i = 0; i < 200; i++)
             {
                 var u = AddVilligar().GetComponent<Unit>();
-                Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, 64, 64, u.PathingComplete));
+                Pathfinder.AddTask(new PathingTask(u, u.X, u.Y, Map.Size / 2, Map.Size / 2, u.PathingComplete));
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.M))
+            NewGame(true);
 
     }
 
     private void DebugCallbackComplete(Stack<MapTile> completePath)
     {
         Debug.Log("Completed debug path");
-        Map.DrawDebugPath(completePath, 60f, Color.magenta);
+        Map.DrawDebugPath(completePath, 15f, Color.magenta);
     }
 
     private void OnTick()

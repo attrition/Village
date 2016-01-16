@@ -65,7 +65,7 @@ public class AStarPather : MonoBehaviour
 
     private IEnumerator UpdatePathingTasks()
     {
-        while (true)
+        while (Ready)
         {
             if (tasks.Count == 0 || !Ready)
                 yield return new WaitUntil(() => tasks.Count != 0 && Ready);
@@ -90,7 +90,7 @@ public class AStarPather : MonoBehaviour
                 costSoFar[start] = 0;
 
                 // path to goal
-                while (true)
+                while (Ready)
                 {
                     if (open.Count == 0)
                         break;
@@ -112,6 +112,9 @@ public class AStarPather : MonoBehaviour
 
                     foreach (var neighbour in neighbours)
                     {
+                        if (!Ready)
+                            break;
+
                         if (neighbour == null || costSoFar.ContainsKey(neighbour))
                             continue;
 
@@ -133,7 +136,7 @@ public class AStarPather : MonoBehaviour
                             else
                                 open.Enqueue(neighbour, f);
                             
-                            //Map.AddLabel(neighbour.X, neighbour.Y, ((int)g).ToString());
+                            Map.AddLabel(neighbour.X, neighbour.Y, ((int)g).ToString());
                         }
                     }
 
@@ -152,10 +155,11 @@ public class AStarPather : MonoBehaviour
                 MapTile lowest = goal;
                 MapTile curr = goal;
 
-                while (curr != start)
+                while (curr != start && Ready)
                 {
                     completePath.Push(curr);
 
+                    //TODO: prefer to check tiles on the slope between start->goal
                     var neighbours = new List<MapTile>()
                     {
                         Map.GetTileAt(curr.X - 1, curr.Y),
@@ -167,6 +171,9 @@ public class AStarPather : MonoBehaviour
                     var lowestCost = costSoFar[curr];
                     foreach (var neighbour in neighbours)
                     {
+                        if (!Ready)
+                            break;
+
                         if (neighbour == null || !costSoFar.ContainsKey(neighbour))
                             continue;
 
@@ -198,7 +205,7 @@ public class AStarPather : MonoBehaviour
         var cross = Mathf.Abs(dx1 * dy2 - dx2 * dy1);
         var heuristic = (d * 2d) * (Mathf.Abs(current.X - goal.X) + Mathf.Abs(current.Y - goal.Y));
         heuristic += cross * 0.001d;
-        heuristic *= 1.001d;
+        heuristic *= 1.101d;
 
         return heuristic;
     }

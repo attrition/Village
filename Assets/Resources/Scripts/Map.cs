@@ -101,17 +101,17 @@ public class Map
         if (path.Count < 2)
             return;
 
-        var prev = path.Pop();
+        var copyPath = path.ToArray();
+        var prev = copyPath[0];
 
-        while (path.Count != 0)
+        foreach (var curr in path)
         {
-            var next = path.Pop();
             Debug.DrawLine(new Vector3(prev.X + 0.5f, 0f, prev.Y + 0.5f),
-                           new Vector3(next.X + 0.5f, 0f, next.Y + 0.5f),
+                           new Vector3(curr.X + 0.5f, 0f, curr.Y + 0.5f),
                            colour,
                            seconds,
                            false);
-            prev = next;
+            prev = curr;
         }
     }
 

@@ -176,6 +176,7 @@ public class Unit : MonoBehaviour
     public void PathingComplete(Stack<MapTile> path)
     {
         Path = path;
+        Game.Map.DrawDebugPath(path, 60f, Color.magenta);
     }
 }
 
